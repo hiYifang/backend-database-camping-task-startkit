@@ -340,6 +340,33 @@ GROUP BY "COURSE_BOOKING".user_id;
     -- inner join ( 用戶王小明的已使用堂數) as "COURSE_BOOKING"
     -- on "COURSE_BOOKING".user_id = "CREDIT_PURCHASE".user_id;
 
+SELECT
+  "USER".id AS user_id,
+  -- COALESCE 函數：用於處理可能為空的 used_credit，若無已使用堂數，則設為 0
+  ("CREDIT_PURCHASE".total_credit - COALESCE("COURSE_BOOKING".used_credit, 0)) AS remaining_credit
+FROM 
+  (SELECT id 
+   FROM "USER" 
+   WHERE name = '王小明') AS "USER"
+LEFT JOIN 
+  (
+    SELECT 
+     user_id, 
+     SUM(purchased_credits) AS total_credit
+    FROM "CREDIT_PURCHASE"
+    GROUP BY user_id
+  ) AS "CREDIT_PURCHASE"
+ON "USER".id = "CREDIT_PURCHASE".user_id
+LEFT JOIN 
+  (
+    SELECT 
+     user_id, 
+     COUNT(*) AS used_credit
+    FROM "COURSE_BOOKING"
+    GROUP BY user_id
+  ) AS "COURSE_BOOKING"
+ON "USER".id = "COURSE_BOOKING".user_id;
+
 
 -- ████████  █████   █     ███  
 --   █ █   ██    █  █     █     
